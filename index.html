@@ -3,146 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>پنل مدیریت آزمون (Admin)</title>
+    <title>پنل مدیریت آزمون</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#007AFF">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #000000;
-            --sub-text: #8A8A8E; --blue: #007AFF; --border: #C6C6C8;
+            --sub-text: #8A8A8E; --blue: #007AFF; --border: #C6C6C8; --red: #FF3B30;
         }
         body.dark-mode {
             --bg: #000000; --card: #1C1C1E; --text: #FFFFFF;
             --sub-text: #98989F; --blue: #0A84FF; --border: #38383A;
         }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
             background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s;
+            user-select: none;
         }
         .container { max-width: 500px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .card { background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         
+        /* کارت‌ها */
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
+        
+        /* اینپوت‌ها */
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--sub-text); }
         input, textarea {
-            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
-            background: var(--bg); color: var(--text); margin-bottom: 10px; font-family: inherit;
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); margin-bottom: 15px; font-family: inherit; font-size: 1rem; outline: none;
         }
-        
-        .q-box { border-right: 4px solid var(--blue); padding-right: 15px; margin-bottom: 25px; }
-        
+        input:focus { border-color: var(--blue); }
+
+        /* بخش سوالات */
+        .q-box { border-right: 5px solid var(--blue); }
+        .delete-q { position: absolute; left: 15px; top: 15px; color: var(--red); cursor: pointer; padding: 5px; }
+
+        /* دکمه‌ها */
         .btn {
-            width: 100%; padding: 16px; border-radius: 14px; border: none;
+            width: 100%; padding: 16px; border-radius: 16px; border: none;
             font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .btn-blue { background: var(--blue); color: white; margin-top: 10px; }
-        .btn-outline { background: transparent; border: 2px solid var(--blue); color: var(--blue); margin-top: 20px; }
+        .btn-blue { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+        .btn-outline { background: transparent; border: 2px solid var(--blue); color: var(--blue); margin-top: 10px; }
+        .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); margin-top: 20px; }
         
+        /* نمایش لینک */
         .link-display {
-            background: var(--bg); padding: 15px; border-radius: 10px;
-            word-break: break-all; font-family: monospace; font-size: 0.8rem;
-            margin: 15px 0; border: 1px dashed var(--blue);
+            background: var(--bg); padding: 15px; border-radius: 12px;
+            word-break: break-all; font-family: monospace; font-size: 0.85rem;
+            margin: 20px 0; border: 1px dashed var(--blue); color: var(--blue);
         }
-        .hidden { display: none; }
+
+        .hidden { display: none !important; }
+        .welcome-section { text-align: center; padding: 40px 0; }
+        .welcome-icon { font-size: 5rem; color: var(--blue); margin-bottom: 20px; opacity: 0.9; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
-            <h2>⚙️ پنل مدیریت ادمین</h2>
-            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--blue); font-size:1.5rem;"><i class="fas fa-moon"></i></button>
+            <h2 id="main-title">مدیریت آزمون</h2>
+            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--blue); font-size:1.4rem;">
+                <i class="fas fa-adjust"></i>
+            </button>
         </div>
 
-        <div id="setup-page">
+        <div id="page-home" class="welcome-section">
+            <div class="welcome-icon"><i class="fas fa-scroll"></i></div>
+            <h3>خوش آمدید، استاد</h3>
+            <p style="color:var(--sub-text); margin-bottom: 30px;">برای طراحی آزمون جدید و ارسال برای دانش‌آموزان آماده‌اید؟</p>
+            <button class="btn btn-blue" onclick="showPage('page-create')">
+                <i class="fas fa-plus"></i> ایجاد آزمون جدید
+            </button>
+        </div>
+
+        <div id="page-create" class="hidden">
             <div class="card">
-                <label>عنوان کل آزمون:</label>
-                <input type="text" id="quiz-title" placeholder="مثلاً: میان‌ترم ادبیات">
+                <label><i class="fas fa-tag"></i> عنوان آزمون</label>
+                <input type="text" id="quiz-title" placeholder="مثلاً: امتحان ترم اول شیمی">
+                
+                <label><i class="fas fa-hourglass-half"></i> زمان مجاز (دقیقه)</label>
+                <input type="number" id="quiz-time" placeholder="مثلاً: 30">
             </div>
 
-            <div id="questions-list">
+            <div id="questions-holder">
                 </div>
 
-            <button class="btn btn-outline" onclick="addQuestion()">+ افزودن سوال جدید</button>
-            <button class="btn btn-blue" style="margin-top:40px;" onclick="generateFinalLink()">🔗 ساخت لینک برای دانش‌آموزان</button>
+            <button class="btn btn-outline" onclick="addNewQuestion()">
+                <i class="fas fa-plus-circle"></i> افزودن سوال جدید
+            </button>
+            
+            <button class="btn btn-blue" style="margin-top:40px;" onclick="finishAndGenerate()">
+                <i class="fas fa-rocket"></i> نهایی‌سازی و دریافت لینک
+            </button>
+            <button class="btn btn-red" style="border:none" onclick="showPage('page-home')">انصراف و بازگشت</button>
         </div>
 
-        <div id="result-page" class="hidden">
+        <div id="page-result" class="hidden">
             <div class="card" style="text-align: center;">
-                <i class="fas fa-check-circle" style="font-size: 4rem; color: #34C759;"></i>
-                <h3>لینک با موفقیت ساخته شد!</h3>
-                <p style="color:var(--sub-text)">این لینک را کپی کنید و برای دانش‌آموزان بفرستید تا آزمون در اپلیکیشن آن‌ها ظاهر شود.</p>
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--blue); margin-bottom: 15px;"></i>
+                <h3>آزمون شما آماده شد!</h3>
+                <p style="color:var(--sub-text); font-size: 0.9rem;">لینک زیر را کپی کرده و برای شرکت‌کنندگان بفرستید.</p>
                 
-                <div id="final-link" class="link-display"></div>
+                <div id="output-link" class="link-display"></div>
                 
-                <button class="btn btn-blue" onclick="copyToClipboard()">کپی لینک</button>
-                <button class="btn btn-outline" onclick="location.reload()">ساخت آزمون جدید</button>
+                <button class="btn btn-blue" onclick="copyLink()">
+                    <i class="fas fa-copy"></i> کپی لینک آزمون
+                </button>
+                
+                <button class="btn btn-outline" style="margin-top:15px" onclick="showPage('page-home')">
+                    <i class="fas fa-home"></i> بازگشت به داشبورد
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // 🛑 اینجا آدرس سایت دانش‌آموز (Netlify) را وارد کن:
-        const STUDENT_WEB_URL = "آدرس_سایت_دانش_آموز_را_اینجا_بگذار";
+        // 🔗 مهم: آدرس سایت دانش‌آموز را اینجا وارد کنید
+        const STUDENT_APP_URL = "https://elaborate-biscochitos-3d1f86.netlify.app";
 
-        // اضافه کردن اولین سوال به صورت خودکار
-        addQuestion();
+        function showPage(pageId) {
+            document.getElementById('page-home').classList.add('hidden');
+            document.getElementById('page-create').classList.add('hidden');
+            document.getElementById('page-result').classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
 
-        function addQuestion() {
-            const list = document.getElementById('questions-list');
-            const qNum = list.children.length + 1;
-            const div = document.createElement('div');
-            div.className = 'card q-box';
-            div.innerHTML = `
-                <h4>سوال ${qNum}</h4>
-                <input type="text" class="q-text" placeholder="متن سوال...">
-                <input type="number" class="q-correct" placeholder="شماره گزینه صحیح (مثلاً 1)">
-                <textarea class="q-options" rows="3" placeholder="گزینه‌ها را در هر سطر بنویسید (حداقل ۲ گزینه)"></textarea>
-            `;
-            list.appendChild(div);
+            if(pageId === 'page-create' && document.getElementById('questions-holder').children.length === 0) {
+                addNewQuestion();
+            }
         }
 
-        function generateFinalLink() {
+        function addNewQuestion() {
+            const holder = document.getElementById('questions-holder');
+            const qID = Date.now();
+            const qDiv = document.createElement('div');
+            qDiv.className = 'card q-box';
+            qDiv.id = `q-container-${qID}`;
+            qDiv.innerHTML = `
+                <i class="fas fa-trash-alt delete-q" onclick="deleteQuestion('q-container-${qID}')"></i>
+                <label>صورت سوال:</label>
+                <input type="text" class="inp-text" placeholder="سوال را اینجا بنویسید">
+                <label>شماره گزینه صحیح:</label>
+                <input type="number" class="inp-correct" placeholder="مثلاً: 1">
+                <label>گزینه‌ها (هر کدام در یک خط):</label>
+                <textarea class="inp-options" rows="3" placeholder="گزینه اول&#10;گزینه دوم..."></textarea>
+            `;
+            holder.appendChild(qDiv);
+        }
+
+        function deleteQuestion(id) {
+            if(confirm("این سوال حذف شود؟")) {
+                document.getElementById(id).remove();
+            }
+        }
+
+        function finishAndGenerate() {
             const title = document.getElementById('quiz-title').value;
-            const qCards = document.querySelectorAll('.q-box');
-            const questions = [];
+            const time = document.getElementById('quiz-time').value;
+            const qElements = document.querySelectorAll('.q-box');
+            const finalQuestions = [];
 
-            if(!title) return alert("لطفاً عنوان آزمون را وارد کنید");
+            if(!title || !time) return alert("لطفاً عنوان و زمان آزمون را تکمیل کنید");
 
-            qCards.forEach(card => {
-                const text = card.querySelector('.q-text').value;
-                const correct = card.querySelector('.q-correct').value;
-                const options = card.querySelector('.q-options').value.split('\n').filter(o => o.trim() !== "");
+            qElements.forEach(el => {
+                const text = el.querySelector('.inp-text').value;
+                const correct = el.querySelector('.inp-correct').value;
+                const options = el.querySelector('.inp-options').value.split('\n').filter(o => o.trim() !== "");
 
                 if(text && correct && options.length >= 2) {
-                    questions.push({
+                    finalQuestions.push({
                         t: text,
                         o: options,
-                        c: parseInt(correct) - 1 // تبدیل به ایندکس 0
+                        c: parseInt(correct) - 1
                     });
                 }
             });
 
-            if(questions.length === 0) return alert("حداقل یک سوال کامل بسازید");
+            if(finalQuestions.length === 0) return alert("حداقل یک سوال معتبر بسازید");
 
-            // ساخت آبجکت و رمزگذاری (Base64 UTF-8)
-            const dataObj = { title, questions, id: Date.now() };
-            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+            // بسته‌بندی داده‌ها
+            const quizData = { title, time, questions: finalQuestions, id: Date.now() };
+            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(quizData))));
             
-            // لینک نهایی
-            const finalURL = `${STUDENT_WEB_URL}/?data=${encoded}`;
-
-            document.getElementById('setup-page').classList.add('hidden');
-            document.getElementById('result-page').classList.remove('hidden');
-            document.getElementById('final-link').innerText = finalURL;
+            const finalLink = `${STUDENT_APP_URL}/?data=${encodedData}`;
+            document.getElementById('output-link').innerText = finalLink;
+            showPage('page-result');
         }
 
-        function copyToClipboard() {
-            const link = document.getElementById('final-link').innerText;
-            navigator.clipboard.writeText(link).then(() => alert("کپی شد!"));
+        function copyLink() {
+            const text = document.getElementById('output-link').innerText;
+            navigator.clipboard.writeText(text).then(() => alert("✅ لینک در کلیپ‌بورد کپی شد."));
         }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
+            localStorage.setItem('admin-theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        // حفظ تم انتخابی
+        if(localStorage.getItem('admin-theme') === 'dark') {
+            document.body.classList.add('dark-mode');
         }
     </script>
 </body>
