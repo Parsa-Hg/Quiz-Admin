@@ -1,0 +1,15 @@
+{
+  "name": "پنل ادمین آزمون",
+  "short_name": "ادمین آزمون",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
