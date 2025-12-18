@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>پنل مدیریت آزمون (Admin)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #F2F2F7; --card: #FFFFFF; --text: #000000;
+            --sub-text: #8A8A8E; --blue: #007AFF; --border: #C6C6C8;
+        }
+        body.dark-mode {
+            --bg: #000000; --card: #1C1C1E; --text: #FFFFFF;
+            --sub-text: #98989F; --blue: #0A84FF; --border: #38383A;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+            background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s;
+        }
+        .container { max-width: 500px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        input, textarea {
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); margin-bottom: 10px; font-family: inherit;
+        }
+        
+        .q-box { border-right: 4px solid var(--blue); padding-right: 15px; margin-bottom: 25px; }
+        
+        .btn {
+            width: 100%; padding: 16px; border-radius: 14px; border: none;
+            font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-blue { background: var(--blue); color: white; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 2px solid var(--blue); color: var(--blue); margin-top: 20px; }
+        
+        .link-display {
+            background: var(--bg); padding: 15px; border-radius: 10px;
+            word-break: break-all; font-family: monospace; font-size: 0.8rem;
+            margin: 15px 0; border: 1px dashed var(--blue);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2>⚙️ پنل مدیریت ادمین</h2>
+            <button onclick="toggleTheme()" style="background:none; border:none; color:var(--blue); font-size:1.5rem;"><i class="fas fa-moon"></i></button>
+        </div>
+
+        <div id="setup-page">
+            <div class="card">
+                <label>عنوان کل آزمون:</label>
+                <input type="text" id="quiz-title" placeholder="مثلاً: میان‌ترم ادبیات">
+            </div>
+
+            <div id="questions-list">
+                </div>
+
+            <button class="btn btn-outline" onclick="addQuestion()">+ افزودن سوال جدید</button>
+            <button class="btn btn-blue" style="margin-top:40px;" onclick="generateFinalLink()">🔗 ساخت لینک برای دانش‌آموزان</button>
+        </div>
+
+        <div id="result-page" class="hidden">
+            <div class="card" style="text-align: center;">
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: #34C759;"></i>
+                <h3>لینک با موفقیت ساخته شد!</h3>
+                <p style="color:var(--sub-text)">این لینک را کپی کنید و برای دانش‌آموزان بفرستید تا آزمون در اپلیکیشن آن‌ها ظاهر شود.</p>
+                
+                <div id="final-link" class="link-display"></div>
+                
+                <button class="btn btn-blue" onclick="copyToClipboard()">کپی لینک</button>
+                <button class="btn btn-outline" onclick="location.reload()">ساخت آزمون جدید</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🛑 اینجا آدرس سایت دانش‌آموز (Netlify) را وارد کن:
+        const STUDENT_WEB_URL = "آدرس_سایت_دانش_آموز_را_اینجا_بگذار";
+
+        // اضافه کردن اولین سوال به صورت خودکار
+        addQuestion();
+
+        function addQuestion() {
+            const list = document.getElementById('questions-list');
+            const qNum = list.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'card q-box';
+            div.innerHTML = `
+                <h4>سوال ${qNum}</h4>
+                <input type="text" class="q-text" placeholder="متن سوال...">
+                <input type="number" class="q-correct" placeholder="شماره گزینه صحیح (مثلاً 1)">
+                <textarea class="q-options" rows="3" placeholder="گزینه‌ها را در هر سطر بنویسید (حداقل ۲ گزینه)"></textarea>
+            `;
+            list.appendChild(div);
+        }
+
+        function generateFinalLink() {
+            const title = document.getElementById('quiz-title').value;
+            const qCards = document.querySelectorAll('.q-box');
+            const questions = [];
+
+            if(!title) return alert("لطفاً عنوان آزمون را وارد کنید");
+
+            qCards.forEach(card => {
+                const text = card.querySelector('.q-text').value;
+                const correct = card.querySelector('.q-correct').value;
+                const options = card.querySelector('.q-options').value.split('\n').filter(o => o.trim() !== "");
+
+                if(text && correct && options.length >= 2) {
+                    questions.push({
+                        t: text,
+                        o: options,
+                        c: parseInt(correct) - 1 // تبدیل به ایندکس 0
+                    });
+                }
+            });
+
+            if(questions.length === 0) return alert("حداقل یک سوال کامل بسازید");
+
+            // ساخت آبجکت و رمزگذاری (Base64 UTF-8)
+            const dataObj = { title, questions, id: Date.now() };
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+            
+            // لینک نهایی
+            const finalURL = `${STUDENT_WEB_URL}/?data=${encoded}`;
+
+            document.getElementById('setup-page').classList.add('hidden');
+            document.getElementById('result-page').classList.remove('hidden');
+            document.getElementById('final-link').innerText = finalURL;
+        }
+
+        function copyToClipboard() {
+            const link = document.getElementById('final-link').innerText;
+            navigator.clipboard.writeText(link).then(() => alert("کپی شد!"));
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>
